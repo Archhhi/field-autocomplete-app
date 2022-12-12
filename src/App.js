@@ -1,25 +1,69 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from 'react'
+import './App.css'
 
 function App() {
+  const [display, setDisplay] = useState(false)
+  const [options, setOptions] = useState([])
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetch(
+          `https://autocomplete.clearbit.com/v1/companies/suggest?query=:${search}`
+        )
+        const companies = await data.json()
+        setOptions(companies)
+      } catch (error) {
+        console.log(error)
+      }
+    }
+
+    search && display && fetchData()
+  }, [search])
+
+  function onSelectCompany(nameCompany) {
+    setSearch(nameCompany)
+    setDisplay(false)
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className={'app'}>
+      <div className={'formWrapper'}>
+        <label htmlFor={'nameCompany'}>Компания</label>
+        <div className={'form'}>
+          <input
+            type={'text'}
+            id={'auto'}
+            placeholder={'Начните вводить название компании'}
+            value={search}
+            autoFocus
+            onClick={() => setDisplay(true)}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          {display && (
+            <div className={'autoContainer'}>
+              {options.map((company) => {
+                return (
+                  <div
+                    key={company.name}
+                    className={'option'}
+                    onClick={() => onSelectCompany(company.name)}
+                  >
+                    <img src={company.logo} />
+                    <div className={'optionDetails'}>
+                      <span>{company.name}</span>
+                      <span>{company.domain}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
